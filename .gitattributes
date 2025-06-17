@@ -81,3 +81,5 @@ def draw():
                     ballY + ballSize/2 > brickY and ballY - ballSize/2 < brickY + brickHeight):
                     ballSpeedY *= -1
                     bricks[i][j] = False
+
+// zminic na klasy dodac przecisk zeby zaczac od nowa , zrobic tak zeby "mozno bylo wygrac ",dodac zeby liczylo ile razy ktos gra
