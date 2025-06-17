@@ -1,2 +1,83 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+screenWidth = 600
+screenHeight = 400
+
+paddleWidth = 80
+paddleHeight = 15
+paddleX = 0
+paddleY = 0
+
+
+ballX = 0
+ballY = 0
+ballSize = 15
+ballSpeedX = 4
+ballSpeedY = -4
+
+cols = 8
+rows = 4
+brickWidth = 60
+brickHeight = 20
+bricks = []
+
+def setup():
+    global paddleX, paddleY, ballX, ballY, bricks
+    size(screenWidth, screenHeight)
+    paddleY = height - 30
+    paddleX = width / 2 - paddleWidth / 2
+    ballX = width / 2
+    ballY = height / 2
+    
+    # оздание кирпичей
+    bricks = [[True for j in range(rows)] for i in range(cols)]
+
+def draw():
+    global paddleX, ballX, ballY, ballSpeedX, ballSpeedY
+
+    background(30)
+
+    #gлатформа
+    paddleX = constrain(mouseX - paddleWidth / 2, 0, width - paddleWidth)
+    fill(200)
+    rect(paddleX, paddleY, paddleWidth, paddleHeight)
+
+    #Мяч
+    fill(255, 100, 100)
+    ellipse(ballX, ballY, ballSize, ballSize)
+
+    #Движение мяча
+    ballX += ballSpeedX
+    ballY += ballSpeedY
+
+    #Стены
+    if ballX <= 0 or ballX >= width:
+        ballSpeedX *= -1
+    if ballY <= 0:
+        ballSpeedY *= -1
+
+    #Отскок отплатформы
+    if (ballY + ballSize/2 >= paddleY and
+        paddleX < ballX < paddleX + paddleWidth):
+        ballSpeedY *= -1
+        ballY = paddleY - ballSize/2
+
+
+    if ballY > height:
+        textSize(32)
+        fill(255)
+        text("Game Over", width/2 - 80, height/2)
+        noLoop()
+
+
+    for i in range(cols):
+        for j in range(rows):
+            if bricks[i][j]:
+                brickX = i * (brickWidth + 10) + 35
+                brickY = j * (brickHeight + 10) + 40
+                fill(100, 200, 255)
+                rect(brickX, brickY, brickWidth, brickHeight)
+
+                #Столкновение мяча с кирпичом
+                if (ballX + ballSize/2 > brickX and ballX - ballSize/2 < brickX + brickWidth and
+                    ballY + ballSize/2 > brickY and ballY - ballSize/2 < brickY + brickHeight):
+                    ballSpeedY *= -1
+                    bricks[i][j] = False
