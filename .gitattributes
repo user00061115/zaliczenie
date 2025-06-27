@@ -6,14 +6,21 @@ rows = 4
 brickWidth = 60
 brickHeight = 20
 
+# Переменные игры
+restart_button_x = screenWidth // 2 - 50
+restart_button_y = screenHeight // 2 + 20
+restart_button_w = 100
+restart_button_h = 30
 
-#платформа
+game_over = False
+
+# ПЛАТФОРМА
 class Paddle:
     def __init__(self, width, height, y):
         self.width = width
         self.height = height
         self.y = y
-        self.x = 0  # начнет обновляться в draw()
+        self.x = 0
 
     def update(self):
         self.x = constrain(mouseX - self.width / 2, 0, width - self.width)
@@ -22,8 +29,7 @@ class Paddle:
         fill(200)
         rect(self.x, self.y, self.width, self.height)
 
-
-#мяч
+# МЯЧ
 class Ball:
     def __init__(self, x, y, size, speedX, speedY):
         self.x = x
@@ -54,8 +60,7 @@ class Ball:
     def check_bottom(self):
         return self.y > height
 
-
-#кирпич
+# КИРПИЧ
 class Brick:
     def __init__(self, x, y):
         self.x = x
@@ -75,21 +80,18 @@ class Brick:
             ball.speedY *= -1
             self.alive = False
 
-
-#обьявляю переменные и обьекты 
+# Глобальные объекты
 paddle = None
 ball = None
 bricks = []
 
 def setup():
-    global paddle, ball, bricks
+    global paddle, ball, bricks, game_over
     size(screenWidth, screenHeight)
 
-    # создаём объекты
     paddle = Paddle(80, 15, height - 30)
     ball = Ball(width / 2, height / 2, 15, 4, -4)
 
-    #создаю кирпичи
     bricks = []
     for i in range(cols):
         for j in range(rows):
@@ -97,32 +99,49 @@ def setup():
             brickY = j * (brickHeight + 10) + 40
             bricks.append(Brick(brickX, brickY))
 
+    game_over = False
 
 def draw():
-    global paddle, ball, bricks
-
+    global game_over
     background(30)
 
-    #платформа
+    # Платформа
     paddle.update()
     paddle.draw()
 
-
-    #мяч
+    # Мяч
     ball.update()
     ball.check_paddle(paddle)
     ball.draw()
 
-
-    #кирпичи
+    # Кирпичи
     for brick in bricks:
         brick.check_collision(ball)
         brick.draw()
 
-
-    #проверка проигрыша
+    # Проверка проигрыша
     if ball.check_bottom():
+        if not game_over:
+            game_over = True
+            noLoop()
+
+        # Надпись "Game Over"
         textSize(32)
         fill(255)
         text("Game Over", width / 2 - 80, height / 2)
-        noLoop()
+
+        # Рисуем кнопку "Restart"
+        fill(180)
+        rect(restart_button_x, restart_button_y, restart_button_w, restart_button_h, 8)
+        fill(0)
+        textSize(16)
+        textAlign(CENTER, CENTER)
+        text("Restart", restart_button_x + restart_button_w / 2, restart_button_y + restart_button_h / 2)
+
+def mousePressed():
+    global game_over
+    if game_over:
+        if (restart_button_x <= mouseX <= restart_button_x + restart_button_w and
+            restart_button_y <= mouseY <= restart_button_y + restart_button_h):
+            setup()
+            loop()
