@@ -100,6 +100,7 @@ def setup():
             bricks.append(Brick(brickX, brickY))
 
     game_over = False
+    loop()
 
 def draw():
     global game_over
@@ -119,24 +120,36 @@ def draw():
         brick.check_collision(ball)
         brick.draw()
 
-    # Проверка проигрыша
+    # Победа
+    all_destroyed = all(not brick.alive for brick in bricks)
+    if all_destroyed and not game_over:
+        game_over = True
+        noLoop()
+        textSize(32)
+        fill(255)
+        text("You Win!", width / 2 - 60, height / 2)
+
+        draw_restart_button()
+        return
+
+    # Проигрыш
     if ball.check_bottom():
         if not game_over:
             game_over = True
             noLoop()
-
-        # Надпись "Game Over"
         textSize(32)
         fill(255)
         text("Game Over", width / 2 - 80, height / 2)
 
-        # Рисуем кнопку "Restart"
-        fill(180)
-        rect(restart_button_x, restart_button_y, restart_button_w, restart_button_h, 8)
-        fill(0)
-        textSize(16)
-        textAlign(CENTER, CENTER)
-        text("Restart", restart_button_x + restart_button_w / 2, restart_button_y + restart_button_h / 2)
+        draw_restart_button()
+
+def draw_restart_button():
+    fill(180)
+    rect(restart_button_x, restart_button_y, restart_button_w, restart_button_h, 8)
+    fill(0)
+    textSize(16)
+    textAlign(CENTER, CENTER)
+    text("Restart", restart_button_x + restart_button_w / 2, restart_button_y + restart_button_h / 2)
 
 def mousePressed():
     global game_over
@@ -144,4 +157,162 @@ def mousePressed():
         if (restart_button_x <= mouseX <= restart_button_x + restart_button_w and
             restart_button_y <= mouseY <= restart_button_y + restart_button_h):
             setup()
-            loop()
+screenWidth = 600
+screenHeight = 400
+
+cols = 8
+rows = 4
+brickWidth = 60
+brickHeight = 20
+
+# Переменные игры
+restart_button_x = screenWidth // 2 - 50
+restart_button_y = screenHeight // 2 + 20
+restart_button_w = 100
+restart_button_h = 30
+
+game_over = False
+
+# ПЛАТФОРМА
+class Paddle:
+    def __init__(self, width, height, y):
+        self.width = width
+        self.height = height
+        self.y = y
+        self.x = 0
+
+    def update(self):
+        self.x = constrain(mouseX - self.width / 2, 0, width - self.width)
+
+    def draw(self):
+        fill(200)
+        rect(self.x, self.y, self.width, self.height)
+
+# МЯЧ
+class Ball:
+    def __init__(self, x, y, size, speedX, speedY):
+        self.x = x
+        self.y = y
+        self.size = size
+        self.speedX = speedX
+        self.speedY = speedY
+
+    def update(self):
+        self.x += self.speedX
+        self.y += self.speedY
+
+        if self.x <= 0 or self.x >= width:
+            self.speedX *= -1
+        if self.y <= 0:
+            self.speedY *= -1
+
+    def draw(self):
+        fill(255, 100, 100)
+        ellipse(self.x, self.y, self.size, self.size)
+
+    def check_paddle(self, paddle):
+        if (self.y + self.size / 2 >= paddle.y and
+            paddle.x < self.x < paddle.x + paddle.width):
+            self.speedY *= -1
+            self.y = paddle.y - self.size / 2
+
+    def check_bottom(self):
+        return self.y > height
+
+# КИРПИЧ
+class Brick:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.alive = True
+
+    def draw(self):
+        if self.alive:
+            fill(100, 200, 255)
+            rect(self.x, self.y, brickWidth, brickHeight)
+
+    def check_collision(self, ball):
+        if not self.alive:
+            return
+        if (ball.x + ball.size / 2 > self.x and ball.x - ball.size / 2 < self.x + brickWidth and
+            ball.y + ball.size / 2 > self.y and ball.y - ball.size / 2 < self.y + brickHeight):
+            ball.speedY *= -1
+            self.alive = False
+
+# Глобальные объекты
+paddle = None
+ball = None
+bricks = []
+
+def setup():
+    global paddle, ball, bricks, game_over
+    size(screenWidth, screenHeight)
+
+    paddle = Paddle(80, 15, height - 30)
+    ball = Ball(width / 2, height / 2, 15, 4, -4)
+
+    bricks = []
+    for i in range(cols):
+        for j in range(rows):
+            brickX = i * (brickWidth + 10) + 35
+            brickY = j * (brickHeight + 10) + 40
+            bricks.append(Brick(brickX, brickY))
+
+    game_over = False
+    loop()
+
+def draw():
+    global game_over
+    background(30)
+
+    # Платформа
+    paddle.update()
+    paddle.draw()
+
+    # Мяч
+    ball.update()
+    ball.check_paddle(paddle)
+    ball.draw()
+
+    # Кирпичи
+    for brick in bricks:
+        brick.check_collision(ball)
+        brick.draw()
+
+    # Победа
+    all_destroyed = all(not brick.alive for brick in bricks)
+    if all_destroyed and not game_over:
+        game_over = True
+        noLoop()
+        textSize(32)
+        fill(255)
+        text("You Win!", width / 2 - 60, height / 2)
+
+        draw_restart_button()
+        return
+
+    # Проигрыш
+    if ball.check_bottom():
+        if not game_over:
+            game_over = True
+            noLoop()
+        textSize(32)
+        fill(255)
+        text("Game Over", width / 2 - 80, height / 2)
+
+        draw_restart_button()
+
+def draw_restart_button():
+    fill(180)
+    rect(restart_button_x, restart_button_y, restart_button_w, restart_button_h, 8)
+    fill(0)
+    textSize(16)
+    textAlign(CENTER, CENTER)
+    text("Restart", restart_button_x + restart_button_w / 2, restart_button_y + restart_button_h / 2)
+
+def mousePressed():
+    global game_over
+    if game_over:
+        if (restart_button_x <= mouseX <= restart_button_x + restart_button_w and
+            restart_button_y <= mouseY <= restart_button_y + restart_button_h):
+            setup()
