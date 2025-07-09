@@ -73,15 +73,24 @@ class Ball:
 
 #KLASA CEGIEŁKI
 class Brick:
-    def __init__(self, x, y):
+    def __init__(self, x, y, row):
         self.x = x  # pozycja pozioma cegiełki
         self.y = y  # pozycja pionowa cegiełki
+        self.row = row
         self.alive = True  # flaga stanu (czy cegiełka jest zniszczona)
+# kolor cegiełki w zależności od wiersza
+        colors = [
+            color(255, 100, 100),  # czerwony
+            color(255, 200, 100),  # pomarańczowy
+            color(100, 200, 255),  # niebieski
+            color(100, 255, 150)   # zielony
+        ]
+        self.color = colors[row % len(colors)]
 
     #rysowanie cegiełki
     def draw(self):
         if self.alive:
-            fill(100, 200, 255)
+            fill(self.color)
             rect(self.x, self.y, brickWidth, brickHeight)
 
     #sprawdzenie kolizji cegiełki z piłką
@@ -93,14 +102,18 @@ class Brick:
             ball.speedY *= -1
             self.alive = False  # cegiełka zostaje zniszczona
 
+            global score
+            score += 10
+
 #OBIEKTY GLOBALNE 
 paddle = None
 ball = None
 bricks = []
+score = 0
 
 #inicjalizacja gry
 def setup():
-    global paddle, ball, bricks, game_over
+    global paddle, ball, bricks, game_over, score
     size(screenWidth, screenHeight)
 
     paddle = Paddle(80, 15, height - 30)
@@ -111,9 +124,10 @@ def setup():
         for j in range(rows):
             brickX = i * (brickWidth + 10) + 35
             brickY = j * (brickHeight + 10) + 40
-            bricks.append(Brick(brickX, brickY))
+            bricks.append(Brick(brickX, brickY, j))
 
     game_over = False
+    score = 0  # resetujemy wynik przy starcie gry
     loop()
 
 #główna pętla rysująca
@@ -135,14 +149,21 @@ def draw():
         brick.check_collision(ball)
         brick.draw()
 
+    # wyświetlanie wyniku    
+    fill(255)
+    textSize(18)
+    textAlign(LEFT, TOP)
+    text("Score: " + str(score), 10, 10)
+
     #warunek zwycięstwa
     all_destroyed = all(not brick.alive for brick in bricks)
     if all_destroyed and not game_over:
         game_over = True
         noLoop()
         textSize(32)
+        textAlign(CENTER, CENTER)
         fill(255)
-        text("You Win!", width / 2 - 60, height / 2)
+        text("You Win!", width / 2, height / 2)
         draw_restart_button()
         return
 
@@ -152,8 +173,9 @@ def draw():
             game_over = True
             noLoop()
         textSize(32)
+        textAlign(CENTER, CENTER)
         fill(255)
-        text("Game Over", width / 2 - 80, height / 2)
+        text("Game Over", width / 2, height / 2)
         draw_restart_button()
 
 #rysowanie przycisku „Restart”
