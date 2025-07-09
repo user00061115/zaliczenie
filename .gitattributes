@@ -133,7 +133,9 @@ def setup():
 #główna pętla rysująca
 def draw():
     global game_over
-    background(30)
+    fill(30, 30, 30, 60)  # efekt smugi za piłką
+    noStroke()
+    rect(0, 0, width, height)
 
     #rysowanie i aktualizacja platformy
     paddle.update()
