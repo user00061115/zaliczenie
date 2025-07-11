@@ -17,6 +17,9 @@ restart_button_h = 30
 #flaga końca gry
 game_over = False
 
+#efekt błysku 
+flash_timer = 0
+
 #KLASY OBIEKTÓW GRY 
 
 #KLASA PLATFORMY GRACZA
@@ -95,15 +98,15 @@ class Brick:
 
     #sprawdzenie kolizji cegiełki z piłką
     def check_collision(self, ball):
+        global flash_timer, score
         if not self.alive:
             return
         if (ball.x + ball.size / 2 > self.x and ball.x - ball.size / 2 < self.x + brickWidth and
             ball.y + ball.size / 2 > self.y and ball.y - ball.size / 2 < self.y + brickHeight):
             ball.speedY *= -1
             self.alive = False  # cegiełka zostaje zniszczona
-
-            global score
             score += 10
+            flash_timer = 5  # efekt błysku na 5 klatek
 
 #OBIEKTY GLOBALNE 
 paddle = None
@@ -133,10 +136,16 @@ def setup():
 
 #główna pętla rysująca
 def draw():
-    global game_over, high_score
-    fill(30, 30, 30, 60)  # efekt smugi za piłką
-    noStroke()
-    rect(0, 0, width, height)
+    global game_over, high_score, flash_timer
+    if flash_timer > 0:
+        fill(255, 255, 255, 150)
+        rect(0, 0, width, height)
+        flash_timer -= 1
+      
+    else:
+        fill(30, 30, 30, 60)  # efekt smugi za piłką
+        noStroke()
+        rect(0, 0, width, height)
 
     #rysowanie i aktualizacja platformy
     paddle.update()
