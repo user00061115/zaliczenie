@@ -110,6 +110,7 @@ paddle = None
 ball = None
 bricks = []
 score = 0
+high_score = 0 #najlepszy wynik
 
 #inicjalizacja gry
 def setup():
@@ -132,7 +133,7 @@ def setup():
 
 #główna pętla rysująca
 def draw():
-    global game_over
+    global game_over, high_score
     fill(30, 30, 30, 60)  # efekt smugi za piłką
     noStroke()
     rect(0, 0, width, height)
@@ -156,12 +157,15 @@ def draw():
     textSize(18)
     textAlign(LEFT, TOP)
     text("Score: " + str(score), 10, 10)
+    text("High Score: " + str(high_score), 90, 10)
 
     #warunek zwycięstwa
     all_destroyed = all(not brick.alive for brick in bricks)
     if all_destroyed and not game_over:
         game_over = True
         noLoop()
+        if score > high_score:
+            high_score = score  # aktualizacja high score
         textSize(32)
         textAlign(CENTER, CENTER)
         fill(255)
@@ -174,6 +178,8 @@ def draw():
         if not game_over:
             game_over = True
             noLoop()
+            if score > high_score:
+                high_score = score  # aktualizacja high score
         textSize(32)
         textAlign(CENTER, CENTER)
         fill(255)
